@@ -12,14 +12,14 @@ In order to use this library, you must enable assertions by either starting the 
 <dependency>
     <groupId>com.github.arosini</groupId>
     <artifactId>wildstyle-generator</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
 </dependency>
 ```
 
 ## Gradle
 
 ```
-compile 'com.github.arosini:wildstyle-generator:0.1'
+compile 'com.github.arosini:wildstyle-generator:0.2'
 ```
 
 # Basic Usage
