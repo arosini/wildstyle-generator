@@ -1,0 +1,122 @@
+/**
+ * Plugins
+ */
+apply plugin: 'eclipse'
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+/**
+ * Project Metadata
+ */
+group = 'com.github.arosini'
+version = '0.1'
+sourceCompatibility = '1.8'
+
+/**
+ * Dependencies
+ */
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+
+  testCompile  group: 'junit',       name: 'junit',      version: '4.12'
+}
+
+/**
+ * Tasks
+ */
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from 'build/docs/javadoc'
+}
+ 
+task sourcesJar(type: Jar) {
+  from sourceSets.main.allSource
+  classifier = 'sources'
+}
+
+/**
+ * Build Configuration
+ */ 
+artifacts {
+  archives jar
+
+  archives javadocJar
+  archives sourcesJar
+}
+
+/**
+ * Plugin Configuration
+ */
+signing {
+  sign configurations.archives
+}
+
+javadoc {
+  options.tags = [ "pre", "post" ] 
+  failOnError = false
+}
+
+if (JavaVersion.current().isJava8Compatible()) {
+  allprojects {
+    tasks.withType(Javadoc) {
+      options.addStringOption('Xdoclint:none', '-quiet')
+    }
+  }
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: sonatypeUsername, password: sonatypePassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: sonatypeUsername, password: sonatypePassword)
+      }
+
+      pom.project {
+        name 'Wildstyle Generator'
+        packaging 'jar'
+        artifactId 'wildstyle-generator'
+        description 'Provides utilities for generating objects in Java.'
+        url 'https://github.com/arosini/wildstyle-generator'
+
+        scm {
+        connection 'scm:git:git://github.com/arosini/wildstyle-generator.git'
+        developerConnection 'scm:git:ssh://github.com:/arosini/wildstyle-generator.git'
+          url 'https://github.com/arosini/wildstyle-generator'
+        }
+
+        licenses {
+          license {
+            name 'The MIT License'
+            url 'https://opensource.org/licenses/MIT'
+          }
+        }
+
+        developers {
+          developer {
+            id 'arosini'
+            name 'Adam Rosini'
+            email 'adaros48@gmail.com'
+          }
+        }
+      }
+    }
+  }
+}
+ 
+/**
+ * Task Ordering
+ */
+// Generate code coverage report after running the tests.
+test.finalizedBy(jacocoTestReport)
